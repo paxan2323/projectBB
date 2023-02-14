@@ -1,0 +1,65 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:14
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=service
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    ports:
+      - "5435:5432"
+  app:
+    build: .
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - .:/var/www/html/
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env-docker
+    depends_on:
+      - db
+      - rabbitmq
+  rabbitmq:
+    image: rabbitmq:3.10-management
+    environment:
+      - RABBITMQ_DEFAULT_USER=guest
+      - RABBITMQ_DEFAULT_PASS=guest
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq:delegated
+    ports:
+      - "15672:15672"
+  mongodb:
+    image: mongo
+    ports:
+      - 27017:27017
+    volumes:
+      - mongodb_data:/data/db
+  celery-default:
+    build: .
+    command: celery -A integrations worker --loglevel=INFO -Q default
+    env_file:
+      - .env-docker
+    depends_on:
+      - db
+      - mongodb
+      - rabbitmq
+  celery-beat:
+    build: .
+    command: celery -A integrations beat --loglevel=INFO
+    env_file:
+      - .env-docker
+    depends_on:
+      - db
+      - mongodb
+      - rabbitmq
+
+volumes:
+  db_data:
+    driver: local
+  rabbitmq_data:
+    driver: local
+  mongodb_data:
