@@ -47,6 +47,8 @@ services:
       - db
       - mongodb
       - rabbitmq
+    volumes:
+      - .:/var/www/html/
   celery-beat:
     build: .
     command: celery -A integrations beat --loglevel=INFO
@@ -56,6 +58,8 @@ services:
       - db
       - mongodb
       - rabbitmq
+    volumes:
+      - .:/var/www/html/
 
 volumes:
   db_data:
@@ -63,3 +67,8 @@ volumes:
   rabbitmq_data:
     driver: local
   mongodb_data:
+    driver: local
+  celery-beat:
+    driver: local
+  celery-default:
+    driver: local

@@ -24,6 +24,7 @@ class ImporterXML: # В разработке
             nameServ = d[1][1]
             category_id = d[1][2]
             services.append({"id":idServ,"name":nameServ,"category_id":category_id}) 
+            
         result = {"categories": categories, "services": services}
         
         with open(f"{self.config.id}.json", "w") as file:
